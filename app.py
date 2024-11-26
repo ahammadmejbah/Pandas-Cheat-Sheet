@@ -1,11 +1,10 @@
-
 import streamlit as st
 import base64
 import requests
 from streamlit_lottie import st_lottie
 import json
 
-# Initial page config
+# Initial page configuration
 st.set_page_config(
     page_title='📊 Pandas Cheat Sheet By Mejbah Ahammad',
     layout="wide",
@@ -80,8 +79,8 @@ $ streamlit run app.py
 # Main body of cheat sheet
 def ds_body():
     # Load Lottie animations
-    lottie_header = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_ydo1amjm.json")
-    lottie_section = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_1pxqjqps.json")
+    lottie_header = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_ydo1amjm.json")  # Replace with your preferred animation
+    lottie_section = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_1pxqjqps.json")  # Replace with your preferred animation
     
     # Header with animation
     st.markdown(f"""
@@ -91,276 +90,382 @@ def ds_body():
     """, unsafe_allow_html=True)
     
     if lottie_header:
-        st_lottie(lottie_header, height=200, key="header")
-
-    # Define Pandas topics and their code snippets
-    sections = {
+        st_lottie(lottie_header, height=200, key="header_animation")
+    
+    # Define Pandas topics and their extended code snippets
+    sections_row1 = {
         "📦 Importing & Setup": {
             "Importing Libraries": '''
 import pandas as pd
 import numpy as np
-    ''',
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Setting display options
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 1000)
+pd.set_option('display.float_format', '{:.2f}'.format)
+            ''',
             "Reading Data": '''
-# Read CSV
-df = pd.read_csv('data.csv')
+# Read CSV with specific encoding
+df = pd.read_csv('data.csv', encoding='utf-8')
 
-# Read Excel
-df = pd.read_excel('data.xlsx', sheet_name='Sheet1')
+# Read Excel specifying sheet
+df = pd.read_excel('data.xlsx', sheet_name='Sheet1', engine='openpyxl')
 
-# Read JSON
+# Read JSON with normalization
 df = pd.read_json('data.json')
+df_normalized = pd.json_normalize(json_data, 'records')
 
-# Read from SQL
+# Read from SQL database
 from sqlalchemy import create_engine
 engine = create_engine('postgresql://user:password@localhost:5432/mydatabase')
-df = pd.read_sql('SELECT * FROM table_name', engine)
-    ''',
+df = pd.read_sql('SELECT * FROM table_name WHERE age > 30', engine)
+            ''',
             "Basic Data Inspection": '''
 # View first 5 rows
-df.head()
+print(df.head())
 
 # View last 5 rows
-df.tail()
+print(df.tail())
 
 # Get DataFrame info
-df.info()
+print(df.info())
 
 # Summary statistics
-df.describe()
+print(df.describe())
 
 # Check for missing values
-df.isnull().sum()
-    '''
+print(df.isnull().sum())
+
+# Display data types
+print(df.dtypes)
+            '''
         },
         "🔍 Data Exploration": {
             "Selecting Columns": '''
 # Select single column
-df['Age']
+age_series = df['Age']
 
 # Select multiple columns
-df[['Name', 'Age', 'Salary']]
-    ''',
-            "Filtering Rows": '''
-# Filter rows based on condition
-df[df['Age'] > 30]
+subset_df = df[['Name', 'Age', 'Salary']]
 
-# Multiple conditions
-df[(df['Age'] > 30) & (df['Salary'] > 50000)]
-    ''',
+# Select columns using filter
+filtered_df = df.filter(items=['Name', 'Age'])
+            ''',
+            "Filtering Rows": '''
+# Filter rows where Age > 30
+df_over_30 = df[df['Age'] > 30]
+
+# Filter with multiple conditions
+df_filtered = df[(df['Age'] > 25) & (df['Salary'] > 50000)]
+
+# Using isin for filtering
+df_isin = df[df['City'].isin(['New York', 'Los Angeles'])]
+            ''',
             "Sorting Data": '''
-# Sort by single column
-df.sort_values(by='Age', ascending=False)
+# Sort by single column ascending
+df_sorted = df.sort_values(by='Age')
+
+# Sort by single column descending
+df_sorted_desc = df.sort_values(by='Age', ascending=False)
 
 # Sort by multiple columns
-df.sort_values(by=['City', 'Age'], ascending=[True, False])
-    ''',
+df_multi_sorted = df.sort_values(by=['City', 'Age'], ascending=[True, False])
+            ''',
             "Handling Missing Values": '''
 # Drop rows with any missing values
-df.dropna(inplace=True)
+df_dropped = df.dropna()
 
-# Fill missing values with a specific value
-df.fillna(0, inplace=True)
+# Drop rows where specific columns are missing
+df_dropped_specific = df.dropna(subset=['Age', 'Salary'])
+
+# Fill missing values with a constant
+df_filled = df.fillna(0)
 
 # Fill missing values with mean of the column
-df['Age'].fillna(df['Age'].mean(), inplace=True)
-    '''
+df['Age'] = df['Age'].fillna(df['Age'].mean())
+
+# Forward fill
+df_ffill = df.fillna(method='ffill')
+
+# Backward fill
+df_bfill = df.fillna(method='bfill')
+            '''
         },
         "🔄 Data Transformation": {
             "Applying Functions": '''
-# Apply function to a column
-df['Age'] = df['Age'].apply(lambda x: x + 1)
+# Apply a lambda function to a column
+df['Age_Plus_One'] = df['Age'].apply(lambda x: x + 1)
 
-# Apply function to entire DataFrame
-df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-    ''',
+# Apply a custom function to a column
+def categorize_age(age):
+    if age < 18:
+        return 'Child'
+    elif age < 35:
+        return 'Young Adult'
+    elif age < 60:
+        return 'Adult'
+    else:
+        return 'Senior'
+
+df['Age_Group'] = df['Age'].apply(categorize_age)
+
+# Apply a function to entire DataFrame
+df_cleaned = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+            ''',
             "Vectorized Operations": '''
 # Create new column based on existing columns
 df['Salary_Per_Age'] = df['Salary'] / df['Age']
 
 # Vectorized string operations
-df['Name'] = df['Name'].str.upper()
-    ''',
+df['Name_Upper'] = df['Name'].str.upper()
+df['City_Lower'] = df['City'].str.lower()
+
+# Boolean operations
+df['High_Earner'] = df['Salary'] > 70000
+            ''',
             "Mapping Values": '''
-# Map values using a dictionary
-df['City'] = df['City'].map({'New York': 'NY', 'Los Angeles': 'LA', 'Chicago': 'CHI'})
-    ''',
-            "Binning Data": '''
-# Binning numerical data
-df['Age Group'] = pd.cut(df['Age'], bins=[0, 18, 35, 60, 100], labels=['Child', 'Young Adult', 'Adult', 'Senior'])
-    '''
-        },
-        "🔗 Merging & Joining": {
-            "Merging DataFrames": '''
-# Inner join
-merged_df = pd.merge(df1, df2, on='Key', how='inner')
+# Map categorical values using a dictionary
+city_mapping = {'New York': 'NY', 'Los Angeles': 'LA', 'Chicago': 'CHI'}
+df['City_Abbr'] = df['City'].map(city_mapping)
 
-# Left join
-merged_df = pd.merge(df1, df2, on='Key', how='left')
-
-# Right join
-merged_df = pd.merge(df1, df2, on='Key', how='right')
-
-# Outer join
-merged_df = pd.merge(df1, df2, on='Key', how='outer')
-    ''',
-            "Concatenating DataFrames": '''
-# Concatenate vertically
-concatenated_df = pd.concat([df1, df2, df3], axis=0)
-
-# Concatenate horizontally
-concatenated_df = pd.concat([df1, df2, df3], axis=1)
-    ''',
-            "Joining on Multiple Keys": '''
-# Merge on multiple keys
-merged_df = pd.merge(df1, df2, on=['Key1', 'Key2'], how='inner')
-    '''
-        },
-        "📊 Grouping & Aggregation": {
-            "Group By": '''
-# Group by single column
-grouped = df.groupby('City')
-
-# Group by multiple columns
-grouped = df.groupby(['City', 'Age Group'])
-    ''',
-            "Aggregation Functions": '''
-# Aggregate with mean
-grouped['Salary'].mean()
-
-# Multiple aggregations
-grouped.agg({'Age': ['mean', 'sum'], 'Salary': 'median'})
-
-# Custom aggregation
-grouped.agg({'Salary': ['mean', 'sum'], 'Experience': lambda x: x.max() - x.min()})
-    ''',
-            "Pivot Tables": '''
-# Simple pivot table
-pivot = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc='sum', fill_value=0)
-
-# Pivot with multiple aggregation functions
-pivot = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc=['sum', 'mean'], fill_value=0)
-
-# Pivot with margins (totals)
-pivot = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc='sum', margins=True, fill_value=0)
-    '''
-        },
-        "📈 Data Visualization": {
-            "Plotting with Pandas": '''
-# Line plot
-df.plot(kind='line', x='Date', y='Sales', title='Sales Over Time')
-
-# Bar plot
-df.plot(kind='bar', x='City', y='Sales', title='Sales by City')
-
-# Scatter plot
-df.plot(kind='scatter', x='Age', y='Salary', title='Age vs Salary')
-
-# Histogram
-df['Age'].plot(kind='hist', bins=10, title='Age Distribution')
-
-# Boxplot
-df.boxplot(column='Salary', by='City', title='Salary Distribution by City')
-    ''',
-            "Advanced Visualization": '''
-# Using seaborn for enhanced visuals
-import seaborn as sns
-
-# Heatmap
-sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
-
-# Pairplot
-sns.pairplot(df, hue='City')
-
-# Boxplot
-sns.boxplot(x='City', y='Salary', data=df)
-
-# Violin plot
-sns.violinplot(x='City', y='Salary', data=df)
-    '''
-        },
-        "🔧 Data Engineering": {
-            "Exporting Data": '''
-# Export to CSV
-df.to_csv('output.csv', index=False)
-
-# Export to Excel
-df.to_excel('output.xlsx', index=False, sheet_name='Sheet1')
-
-# Export to JSON
-df.to_json('output.json', orient='records', lines=True)
-    ''',
-            "Handling Large Datasets": '''
-# Read large CSV in chunks
-chunksize = 10**6
-for chunk in pd.read_csv('large_data.csv', chunksize=chunksize):
-    process(chunk)
-
-# Optimize memory usage
-df['Age'] = df['Age'].astype('int8')
-df['Salary'] = df['Salary'].astype('float32')
-    ''',
-            "Using SQL with Pandas": '''
-# Querying SQL database
-query = "SELECT * FROM table_name WHERE Age > 30"
-df_filtered = pd.read_sql(query, engine)
-    '''
-        },
-        "🔍 Advanced Topics": {
-            "Time Series Analysis": '''
-# Convert to datetime
-df['Date'] = pd.to_datetime(df['Date'])
-
-# Set index
-df.set_index('Date', inplace=True)
-
-# Resample data
-monthly_sales = df['Sales'].resample('M').sum()
-
-# Rolling statistics
-df['Sales_MA'] = df['Sales'].rolling(window=12).mean()
-    ''',
-            "Handling Categorical Data": '''
-# One-Hot Encoding
-df = pd.get_dummies(df, columns=['Category'])
-
-# Label Encoding
-from sklearn.preprocessing import LabelEncoder
-le = LabelEncoder()
-df['Category'] = le.fit_transform(df['Category'])
-    ''',
-            "Applying Functions with GroupBy": '''
-# Apply custom function
-def custom_func(x):
-    return x.max() - x.min()
-
-result = grouped['Experience'].apply(custom_func)
-    '''
+# Replace values directly
+df['Gender'].replace({'Male': 'M', 'Female': 'F'}, inplace=True)
+            '''
         }
     }
 
-    # Load section animation if available
-    if lottie_section:
-        st_lottie(lottie_section, height=150, key="section")
+    sections_row2 = {
+        "🔗 Merging & Joining": {
+            "Merging DataFrames": '''
+# Inner join on 'Key'
+merged_inner = pd.merge(df1, df2, on='Key', how='inner')
 
-    # Render sections using tabs
-    st.header("📚 Pandas Topics")
-    tabs = st.tabs(list(sections.keys()))
-    for tab, (section_title, subtopics) in zip(tabs, sections.items()):
-        with tab:
-            # Display section animation
-            if lottie_section:
-                st_lottie(lottie_section, height=100, key=f"{section_title}_animation")
-            
-            # Display subtopics using expanders
-            for sub_title, code in subtopics.items():
-                with st.expander(sub_title, expanded=False):
-                    # Display code with appropriate syntax highlighting
-                    language = 'python'  # Pandas uses Python
-                    st.code(code, language=language)
+# Left join on 'Key'
+merged_left = pd.merge(df1, df2, on='Key', how='left')
+
+# Right join on 'Key'
+merged_right = pd.merge(df1, df2, on='Key', how='right')
+
+# Outer join on 'Key'
+merged_outer = pd.merge(df1, df2, on='Key', how='outer')
+            ''',
+            "Concatenating DataFrames": '''
+# Concatenate vertically (stacking rows)
+concatenated_vert = pd.concat([df1, df2, df3], axis=0)
+
+# Concatenate horizontally (stacking columns)
+concatenated_horz = pd.concat([df1, df2, df3], axis=1)
+            ''',
+            "Joining on Multiple Keys": '''
+# Merge on multiple keys 'Key1' and 'Key2'
+merged_multiple = pd.merge(df1, df2, on=['Key1', 'Key2'], how='inner')
+            '''
+        },
+        "📊 Grouping & Aggregation": {
+            "Group By": '''
+# Group by single column 'City'
+grouped_city = df.groupby('City')
+
+# Group by multiple columns 'City' and 'Age_Group'
+grouped_multi = df.groupby(['City', 'Age_Group'])
+            ''',
+            "Aggregation Functions": '''
+# Aggregate with mean
+age_mean = grouped_city['Age'].mean()
+
+# Multiple aggregations
+aggregated = grouped_city.agg({'Age': ['mean', 'sum'], 'Salary': 'median'})
+
+# Custom aggregation functions
+custom_agg = grouped_city.agg({
+    'Salary': ['mean', 'sum'],
+    'Experience': lambda x: x.max() - x.min()
+})
+            ''',
+            "Pivot Tables": '''
+# Simple pivot table
+pivot_simple = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc='sum', fill_value=0)
+
+# Pivot with multiple aggregation functions
+pivot_multi = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc=['sum', 'mean'], fill_value=0)
+
+# Pivot with margins (totals)
+pivot_margins = df.pivot_table(values='Sales', index='Region', columns='Product', aggfunc='sum', margins=True, fill_value=0)
+            '''
+        },
+        "📈 Data Visualization": {
+            "Plotting with Pandas": '''
+# Line plot for Sales over Time
+df.plot(kind='line', x='Date', y='Sales', title='Sales Over Time', figsize=(10,6))
+
+# Bar plot for Sales by City
+df.plot(kind='bar', x='City', y='Sales', title='Sales by City', figsize=(10,6), color='skyblue')
+
+# Scatter plot for Age vs Salary
+df.plot(kind='scatter', x='Age', y='Salary', title='Age vs Salary', figsize=(10,6), color='red')
+
+# Histogram for Age Distribution
+df['Age'].plot(kind='hist', bins=10, title='Age Distribution', figsize=(10,6), color='green', edgecolor='black')
+
+# Boxplot for Salary Distribution by City
+df.boxplot(column='Salary', by='City', title='Salary Distribution by City', figsize=(10,6))
+            ''',
+            "Advanced Visualization": '''
+# Heatmap using seaborn
+import seaborn as sns
+
+plt.figure(figsize=(10,8))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+plt.title('Correlation Heatmap')
+plt.show()
+
+# Pairplot using seaborn
+sns.pairplot(df, hue='City', markers=["o", "s", "D"], palette='Set2')
+plt.title('Pairplot of DataFrame')
+plt.show()
+
+# Boxplot using seaborn
+plt.figure(figsize=(10,6))
+sns.boxplot(x='City', y='Salary', data=df)
+plt.title('Salary Distribution by City')
+plt.show()
+
+# Violin plot using seaborn
+plt.figure(figsize=(10,6))
+sns.violinplot(x='City', y='Salary', data=df, palette='Pastel1')
+plt.title('Salary Distribution by City')
+plt.show()
+            '''
+        },
+        "🔧 Data Engineering": {
+            "Exporting Data": '''
+# Export DataFrame to CSV
+df.to_csv('output.csv', index=False)
+
+# Export DataFrame to Excel with specific sheet name
+df.to_excel('output.xlsx', index=False, sheet_name='DataSheet')
+
+# Export DataFrame to JSON
+df.to_json('output.json', orient='records', lines=True)
+
+# Export DataFrame to SQL database
+from sqlalchemy import create_engine
+engine = create_engine('postgresql://user:password@localhost:5432/mydatabase')
+df.to_sql('table_name', engine, if_exists='replace', index=False)
+            ''',
+            "Handling Large Datasets": '''
+# Read large CSV in chunks
+chunksize = 10**6
+chunks = []
+for chunk in pd.read_csv('large_data.csv', chunksize=chunksize):
+    # Process each chunk
+    processed_chunk = chunk[chunk['Age'] > 30]
+    chunks.append(processed_chunk)
+df_large = pd.concat(chunks, axis=0)
+
+# Optimize memory usage by changing data types
+df['Age'] = df['Age'].astype('int16')
+df['Salary'] = df['Salary'].astype('float32')
+            ''',
+            "Using SQL with Pandas": '''
+# Querying SQL database and loading into DataFrame
+query = """
+SELECT Name, Age, Salary
+FROM employees
+WHERE Age > 25
+ORDER BY Salary DESC
+"""
+df_sql = pd.read_sql(query, engine)
+
+# Display the DataFrame
+print(df_sql.head())
+            '''
+        },
+        "🔍 Advanced Topics": {
+            "Time Series Analysis": '''
+# Convert 'Date' column to datetime
+df['Date'] = pd.to_datetime(df['Date'])
+
+# Set 'Date' as index
+df.set_index('Date', inplace=True)
+
+# Resample data to monthly frequency and sum Sales
+monthly_sales = df['Sales'].resample('M').sum()
+
+# Plot resampled data
+monthly_sales.plot(kind='line', title='Monthly Sales', figsize=(12,6))
+plt.show()
+
+# Rolling statistics: 12-month moving average
+df['Sales_MA12'] = df['Sales'].rolling(window=12).mean()
+df['Sales_MA12'].plot(title='12-Month Moving Average of Sales', figsize=(12,6))
+plt.show()
+            ''',
+            "Handling Categorical Data": '''
+# One-Hot Encoding using get_dummies
+df_encoded = pd.get_dummies(df, columns=['Category'], drop_first=True)
+
+# Label Encoding using sklearn
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+df['Category_Encoded'] = le.fit_transform(df['Category'])
+
+# Handling ordinal categories
+ordinal_mapping = {'Low': 1, 'Medium': 2, 'High': 3}
+df['Priority_Level'] = df['Priority'].map(ordinal_mapping)
+            ''',
+            "Applying Functions with GroupBy": '''
+# Define a custom aggregation function
+def range_func(x):
+    return x.max() - x.min()
+
+# Apply custom function to 'Experience' column
+experience_range = grouped_city['Experience'].apply(range_func)
+print(experience_range)
+
+# Apply multiple aggregation functions
+aggregated = df.groupby('City').agg({
+    'Salary': ['mean', 'sum', 'median'],
+    'Age': 'max',
+    'Experience': range_func
+})
+print(aggregated)
+            '''
+        }
+    }
+
+    # Split main categories into two rows
+    main_categories_row1 = list(sections_row1.keys())
+    main_categories_row2 = list(sections_row2.keys())
+
+    # Function to render a row of tabs without hiding content
+    def render_tab_row(categories, sections):
+        # Create tabs for the given categories
+        tabs = st.tabs(categories)
+        for tab, category in zip(tabs, categories):
+            with tab:
+                # Optional: Add section animation
+                st.markdown("<br>", unsafe_allow_html=True)
+                # Iterate through subtopics and display code snippets
+                for sub_title, code in sections[category].items():
+                    st.markdown(f"### {sub_title}")
+                    st.code(code, language='python')
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+    # Layout using containers for each row
+    with st.container():
+        st.markdown("<h2 style='text-align: center; color: #333333;'>📚 Foundational Pandas Topics</h2>", unsafe_allow_html=True)
+        render_tab_row(main_categories_row1, sections_row1)
+
+    with st.container():
+        st.markdown("<h2 style='text-align: center; color: #333333;'>🚀 Advanced Pandas Topics</h2>", unsafe_allow_html=True)
+        render_tab_row(main_categories_row2, sections_row2)
 
     # Footer with social media links and animation
     st.markdown(f"""
-        <div style="background-color: #FFFFFF; color: black; text-align: center; padding: 20px; margin-top: 50px; border-top: 2px solid #000000;">
+        <div style="background-color: #F5F5F5; color: black; text-align: center; padding: 20px; margin-top: 50px; border-top: 2px solid #CCCCCC;">
             <p>Connect with me:</p>
             <div style="display: flex; justify-content: center; gap: 20px;">
                 <a href="https://facebook.com/ahammadmejbah" target="_blank">
@@ -377,7 +482,7 @@ result = grouped['Experience'].apply(custom_func)
                 </a>
             </div>
             <br>
-            <small>Pandas Cheat Sheet v1.0 | Nov 2024 | <a href="https://ahammadmejbah.com/" style="color: #000000;">Mejbah Ahammad</a></small>
+            <small>Pandas Cheat Sheet v1.0 | Nov 2024 | <a href="https://ahammadmejbah.com/" style="color: #333333;">Mejbah Ahammad</a></small>
             <div class="card-footer">Mejbah Ahammad © 2024</div>
         </div>
     """, unsafe_allow_html=True)
