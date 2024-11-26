@@ -2,3 +2,7 @@ streamlit
 streamlit_lottie
 pandas
 sqlalchemy
+matplotlib
+numpy
+scikit-learn
+statsmodels
