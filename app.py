@@ -26,7 +26,7 @@ register_matplotlib_converters()
 
 # Initial page configuration
 st.set_page_config(
-    page_title='📊 Comprehensive Pandas Cheat Sheet By Mejbah Ahammad',
+    page_title='📊 Pandas Cheat Sheet By Mejbah Ahammad',
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -92,7 +92,7 @@ def ds_sidebar():
         unsafe_allow_html=True
     )
     
-    st.sidebar.header('🧰 Comprehensive Pandas Cheat Sheet')
+    st.sidebar.header('🧰 Pandas Cheat Sheet By Mejbah Ahammad')
     
     st.sidebar.markdown('''
     <small>All-encompassing summary of essential Pandas concepts, functions, and best practices.</small>
