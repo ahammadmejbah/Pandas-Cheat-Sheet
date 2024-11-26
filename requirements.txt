@@ -6,3 +6,4 @@ matplotlib
 numpy
 scikit-learn
 statsmodels
+seaborn
